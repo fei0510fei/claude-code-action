@@ -1,0 +1,49 @@
+name: Claude Review - Path Specific
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+    paths:
+      # Only run when specific paths are modified
+      - "src/**/*.js"
+      - "src/**/*.ts"
+      - "api/**/*.py"
+      # You can add more specific patterns as needed
+
+jobs:
+  claude-review-paths:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+      id-token: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Claude Code Review
+        uses: Akira-Papa/claude-code-action@beta
+        with:
+          # Option 1: Use Anthropic API key (commented out for OAuth)
+          # anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          
+          # Option 2: Use OAuth for Claude Max subscribers (ACTIVE)
+          use_oauth: "true"
+          claude_access_token: ${{ secrets.CLAUDE_ACCESS_TOKEN }}
+          claude_refresh_token: ${{ secrets.CLAUDE_REFRESH_TOKEN }}
+          claude_expires_at: ${{ secrets.CLAUDE_EXPIRES_AT }}
+          
+          timeout_minutes: "60"
+          direct_prompt: |
+            Please review this pull request focusing on the changed files.
+            Provide feedback on:
+            - Code quality and adherence to best practices
+            - Potential bugs or edge cases
+            - Performance considerations
+            - Security implications
+            - Suggestions for improvement
+
+            Since this PR touches critical source code paths, please be thorough
+            in your review and provide inline comments where appropriate.
